@@ -1,0 +1,10 @@
+"use client";
+import { useEffect, useState } from "react";
+import { ExternalLink } from "lucide-react";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { StatusBadge } from "@/components/shared/StatusBadge";
+import { api } from "@/lib/api";
+
+type Source={id:string;provider:string;dataset:string;category:string;classification:string;status:string;source_url:string|null;coverage:string;record_count:number|null;limitation:string;last_retrieval?:string|null};
+export function DataSources(){const [sources,setSources]=useState<Source[]>([]);const [error,setError]=useState("");const [loading,setLoading]=useState(true);useEffect(()=>{api<{data:Source[]}>("/data-sources").then(r=>setSources(r.data)).catch(e=>setError(e.message)).finally(()=>setLoading(false))},[]);return <><PageHeader eyebrow="Provenance register" title="Data Sources" description="Each source is categorized so live, derived, simulated, unavailable, and illustrative information is never conflated."/>{error&&<div className="error" role="alert">{error}</div>}<section className="card">{loading&&<p className="muted" role="status">Loading source register…</p>}{!loading&&!sources.length&&!error&&<p className="muted">No data sources are registered.</p>}{sources.map(source=><article className="list-row" key={source.id}><div><div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}><strong>{source.provider}</strong><StatusBadge value={source.status}/></div><p><strong>{source.dataset}</strong> · {source.category}</p><p>Classification: {source.classification}<br/>Coverage: {source.coverage}<br/>Last retrieval/processing: {source.last_retrieval ? new Date(source.last_retrieval).toLocaleString() : "not recorded"}<br/>Records/features: {source.record_count ?? "on-demand / not stored"}<br/>Limitation: {source.limitation}</p>{source.source_url&&<a className="small" style={{color:"var(--mint)"}} href={source.source_url} target="_blank" rel="noreferrer">Source and attribution <ExternalLink size={11} style={{verticalAlign:"middle"}}/></a>}</div></article>)}</section></>;}
+
